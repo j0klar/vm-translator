@@ -2,10 +2,10 @@
 
 #from parser import Parser
 #from code_writer import CodeWriter
-#import sys
+import sys
 
 def main():
-    pass
+    file_in = sys.argv[1]
           
 if __name__ == "__main__":
     main()

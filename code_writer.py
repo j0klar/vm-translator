@@ -4,7 +4,7 @@ class CodeWriter:
     def __init__(self, file):
         pass
         
-    def write_aritlog(self, command):
+    def write_arithmetic(self, command):
         pass
         
     def write_pushpop(self, command, segment, index):
