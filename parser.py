@@ -1,5 +1,5 @@
 class Parser:
-    """Parses a single .vm-file into push/pop and arithmetic/logical commands."""
+    """Parses a single .vm-file into push/pop and arithmetic-logical commands."""
     
     def __init__(self, file):
         self.line_count = 0
@@ -33,10 +33,10 @@ class Parser:
         if cmd == "push" or cmd == "pop":
             return self.instr.split()[1]
         else:
-            return first
+            return cmd
         
     def arg2(self):
-        return int(self.instr.split()[2])
+        return self.instr.split()[2]
     
         
              
