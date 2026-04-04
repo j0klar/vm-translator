@@ -1,20 +1,14 @@
 // push constant 7
-@constant
-D=A
 @7
-A=D+A
-D=M
+D=A
 @SP
 A=M
 M=D
 @SP
 M=M+1
 // push constant 8
-@constant
-D=A
 @8
-A=D+A
-D=M
+D=A
 @SP
 A=M
 M=D
@@ -24,7 +18,7 @@ M=M+1
 @SP
 AM=M-1
 D=M
-AM=M-1
+A=M-1
 M=D+M
 // end program
 (END)
