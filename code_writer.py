@@ -14,11 +14,11 @@ class CodeWriter:
             case "neg":
                 asm = asm + "@SP\n" + "AM=M-1\n" + "M=-M\n"
             case "eq":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@true\n" + "D;JEQ\n" + "@SP\n" + "M=D\n" + "(true)\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JEQ\n" + "@SP\n" + "M=D\n" + "(TRUE)\n"
             case "gt":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@true\n" + "D;JGT\n" + "@SP\n" + "M=D\n" + "(true)\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JGT\n" + "@SP\n" + "M=D\n" + "(TRUE)\n"
             case "lt":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@true\n" + "D;JLT\n" + "@SP\n" + "M=D\n" + "(true)\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JLT\n" + "@SP\n" + "M=D\n" + "(TRUE)\n"
             case "and":
                 asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "M=D&M\n"
             case "or":
@@ -34,6 +34,9 @@ class CodeWriter:
         elif command == "C_POP": # pop segment index -> asm instructions
             asm = "// pop "+segment+" "+index+"\n" + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@"+segment+"\n" + "D=A\n" + "@"+index+"\n" + "D=D+A\n" + "@R14\n" + "M=D\n" + "@R13\n" + "D=M\n" + "@R14\n" + "A=M\n" + "M=D\n"
         self.file.write(asm)
+        
+    def end_program(self):
+        self.file.write("// end program\n" + "(END)\n" + "@END\n" + "0;JMP")
         
     def close(self):
         self.file.close()

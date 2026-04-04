@@ -26,3 +26,7 @@ AM=M-1
 D=M
 AM=M-1
 M=D+M
+// end program
+(END)
+@END
+0;JMP

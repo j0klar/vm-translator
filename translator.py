@@ -15,7 +15,8 @@ def main():
             code_writer.write_pushpop(parser.command_type(), parser.arg1(), parser.arg2())
         elif parser.command_type() == "C_ARITHMETIC":
             code_writer.write_arithmetic(parser.arg1())
-    
+            
+    code_writer.end_program()
     code_writer.close()
     
 if __name__ == "__main__":
