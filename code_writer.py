@@ -44,6 +44,8 @@ class CodeWriter:
                 mapped = "THIS"
             case "that":
                 mapped = "THAT"
+            case "temp":
+                mapped = "5"
             case "pointer":
                 mapped = "3"
                 
@@ -56,8 +58,8 @@ class CodeWriter:
             elif segment == "static":
                 asm = debug + "@"+self.path[:-4]+".i"+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack()
             
-            elif segment == "temp":
-                asm = debug + "@5\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack() 
+            elif segment == "temp" or segment == "pointer":
+                asm = debug + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack() 
                 
             else:
                 asm = debug + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack()
@@ -68,8 +70,8 @@ class CodeWriter:
             if segment == "static":
                 asm = debug + self.__pop_from_stack() + "@"+self.path[:-4]+".i"+"\n" + "D=A\n" + "@"+index+"\n" + self.__store_in_segment()
             
-            elif segment == "temp":
-                asm = debug + self.__pop_from_stack() + "@5\n" + "D=A\n" + "@"+index+"\n" + self.__store_in_segment()
+            elif segment == "temp" or segment == "pointer":
+                asm = debug + self.__pop_from_stack() + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + self.__store_in_segment()
             
             else:
                 asm = debug + self.__pop_from_stack() + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + self.__store_in_segment()
@@ -90,4 +92,3 @@ class CodeWriter:
         
     def close(self):
         self.file.close()
-    

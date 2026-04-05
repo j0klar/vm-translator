@@ -37,7 +37,3 @@ class Parser:
         
     def arg2(self):
         return self.instr.split()[2]
-    
-        
-             
-
