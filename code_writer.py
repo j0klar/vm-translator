@@ -4,6 +4,7 @@ class CodeWriter:
     def __init__(self, path):
         self.path = path
         self.file = open(path, "w")
+        self.distinct = 0
         
     def write_arithmetic(self, command):
         asm = "// "+command+"\n"
@@ -15,11 +16,11 @@ class CodeWriter:
             case "neg":
                 asm = asm + "@SP\n" + "AM=M-1\n" + "M=-M\n" + "@SP\n" + "M=M+1\n"
             case "eq":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JEQ\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE)\n" + "@SP\n" + "M=M+1\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JEQ\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
             case "gt":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JGT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE)\n" + "@SP\n" + "M=M+1\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JGT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
             case "lt":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JLT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE)\n" + "@SP\n" + "M=M+1\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JLT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
             case "and":
                 asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "M=D&M\n" + "@SP\n" + "M=M+1\n"
             case "or":
@@ -28,6 +29,7 @@ class CodeWriter:
                 asm = asm + "@SP\n" + "AM=M-1\n" + "M=!M\n" + "@SP\n" + "M=M+1\n"
                 
         self.file.write(asm)
+        self.distinct += 1
         
     def write_pushpop(self, command, segment, index):
         match segment:
@@ -46,19 +48,24 @@ class CodeWriter:
                 
         if command == "C_PUSH": # push segment index -> asm instructions
             asm = "// push "+segment+" "+index+"\n"
+            
             if segment == "constant":
                 asm = asm + "@"+index+"\n" + "D=A\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
+                
             elif segment == "static":
-                asm = asm + "@"+path[:-4]+".i"+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
+                asm = asm + "@"+self.path[:-4]+".i"+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
+            
             else:
                 asm = asm + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
                 
         elif command == "C_POP": # pop segment index -> asm instructions
             asm = "// pop "+segment+" "+index+"\n"
+            
             if segment == "static":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "D=D+A\n" + "@R14\n" + "M=D\n" + "@R13\n" + "D=M\n" + "@R14\n" + "A=M\n" + "M=D\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@"+self.path[:-4]+".i"+"\n" + "D=A\n" + "@"+index+"\n" + "D=D+A\n" + "@R14\n" + "M=D\n" + "@R13\n" + "D=M\n" + "@R14\n" + "A=M\n" + "M=D\n"
+            
             else:
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@"+path[:-4]+".i"+"\n" + "D=A\n" + "@"+index+"\n" + "D=D+A\n" + "@R14\n" + "M=D\n" + "@R13\n" + "D=M\n" + "@R14\n" + "A=M\n" + "M=D\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "D=D+A\n" + "@R14\n" + "M=D\n" + "@R13\n" + "D=M\n" + "@R14\n" + "A=M\n" + "M=D\n"
                 
         self.file.write(asm)
         
