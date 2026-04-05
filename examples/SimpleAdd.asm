@@ -18,8 +18,11 @@ M=M+1
 @SP
 AM=M-1
 D=M
-A=M-1
+@SP
+AM=M-1
 M=D+M
+@SP
+M=M+1
 // end program
 (END)
 @END

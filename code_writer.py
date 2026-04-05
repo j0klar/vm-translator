@@ -9,23 +9,23 @@ class CodeWriter:
         asm = "// "+command+"\n"
         match command: # arithmetic-logical command -> asm instructions
             case "add":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "A=M-1\n" + "M=D+M\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "M=D+M\n" + "@SP\n" + "M=M+1\n"
             case "sub":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "A=M-1\n" + "M=M-D\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "M=M-D\n" + "@SP\n" + "M=M+1\n"
             case "neg":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "M=-M\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "M=-M\n" + "@SP\n" + "M=M+1\n"
             case "eq":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JEQ\n" + "@SP\n" + "M=D\n" + "(TRUE)\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JEQ\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE)\n" + "@SP\n" + "M=M+1\n"
             case "gt":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JGT\n" + "@SP\n" + "M=D\n" + "(TRUE)\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JGT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE)\n" + "@SP\n" + "M=M+1\n"
             case "lt":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JLT\n" + "@SP\n" + "M=D\n" + "(TRUE)\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "D=M-D\n" + "M=-1\n" + "@TRUE\n" + "D;JLT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE)\n" + "@SP\n" + "M=M+1\n"
             case "and":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "M=D&M\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "M=D&M\n" + "@SP\n" + "M=M+1\n"
             case "or":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "AM=M-1\n" + "M=D|M\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "M=D|M\n" + "@SP\n" + "M=M+1\n"
             case "not":
-                asm = asm + "@SP\n" + "AM=M-1\n" + "M=!M\n"
+                asm = asm + "@SP\n" + "AM=M-1\n" + "M=!M\n" + "@SP\n" + "M=M+1\n"
                 
         self.file.write(asm)
         
