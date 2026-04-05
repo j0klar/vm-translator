@@ -163,7 +163,7 @@ D=M
 @R13
 M=D
 @5
-D=M
+D=A
 @6
 D=D+A
 @R14
@@ -266,7 +266,7 @@ M=M-D
 M=M+1
 // push temp 6
 @5
-D=M
+D=A
 @6
 A=D+A
 D=M
