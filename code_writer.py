@@ -1,8 +1,10 @@
+import os
+
 class CodeWriter:
     """Translates a parsed VM command into Hack assembly instructions."""
     
     def __init__(self, path):
-        self.path = path
+        self.filename = os.path.basename(path)[:-4]
         self.file = open(path, "w")
         self.distinct = 0
         
@@ -17,10 +19,13 @@ class CodeWriter:
                 asm = debug + "@SP\n" + "AM=M-1\n" + "M=-M\n" + "@SP\n" + "M=M+1\n"
             case "eq":
                 asm = debug + self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JEQ\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
+                self.distinct += 1
             case "gt":
                 asm = debug + self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JGT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
+                self.distinct += 1
             case "lt":
                 asm = debug + self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JLT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
+                self.distinct += 1
             case "and":
                 asm = debug + self.__pop_x_y() + "M=D&M\n" + "@SP\n" + "M=M+1\n"
             case "or":
@@ -29,7 +34,6 @@ class CodeWriter:
                 asm = debug + "@SP\n" + "AM=M-1\n" + "M=!M\n" + "@SP\n" + "M=M+1\n"
                 
         self.file.write(asm)
-        self.distinct += 1
         
     def __pop_x_y(self):
         return "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n"
@@ -56,7 +60,7 @@ class CodeWriter:
                 asm = debug + "@"+index+"\n" + "D=A\n" + self.__push_to_stack()
                 
             elif segment == "static":
-                asm = debug + "@"+self.path[:-4]+".i"+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack()
+                asm = debug + "@"+self.filename+"."+index+"\n" + "D=M\n" + self.__push_to_stack()
             
             elif segment == "temp" or segment == "pointer":
                 asm = debug + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack() 
@@ -68,7 +72,7 @@ class CodeWriter:
             debug = "// pop "+segment+" "+index+"\n"
             
             if segment == "static":
-                asm = debug + self.__pop_from_stack() + "@"+self.path[:-4]+".i"+"\n" + "D=A\n" + "@"+index+"\n" + self.__store_in_segment()
+                asm = debug + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.filename+"."+index+"\n" + "M=D\n"
             
             elif segment == "temp" or segment == "pointer":
                 asm = debug + self.__pop_from_stack() + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + self.__store_in_segment()
