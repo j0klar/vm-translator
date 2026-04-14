@@ -35,7 +35,7 @@ class Parser:
             return "C_FUNCTION"
         elif operator == "call":
             return "C_CALL"
-        elif operator = "return":
+        elif operator == "return":
             return "C_RETURN"
         else:
             return "C_ARITHMETIC" 

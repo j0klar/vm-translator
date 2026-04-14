@@ -13,28 +13,28 @@ class CodeWriter:
         debug = "// "+command+"\n"
         match command: # arithmetic-logical command -> asm instructions
             case "add":
-                asm = debug + self.__pop_x_y() + "M=D+M\n" + "@SP\n" + "M=M+1\n"
+                asm = self.__pop_x_y() + "M=D+M\n" + "@SP\n" + "M=M+1\n"
             case "sub":
-                asm = debug + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "M=M-D\n" + "@SP\n" + "M=M+1\n"
+                asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "M=M-D\n" + "@SP\n" + "M=M+1\n"
             case "neg":
-                asm = debug + "@SP\n" + "AM=M-1\n" + "M=-M\n" + "@SP\n" + "M=M+1\n"
+                asm = "@SP\n" + "AM=M-1\n" + "M=-M\n" + "@SP\n" + "M=M+1\n"
             case "eq":
-                asm = debug + self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JEQ\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
+                asm = self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JEQ\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
                 self.distinct += 1
             case "gt":
-                asm = debug + self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JGT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
+                asm = self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JGT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
                 self.distinct += 1
             case "lt":
-                asm = debug + self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JLT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
+                asm = self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JLT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
                 self.distinct += 1
             case "and":
-                asm = debug + self.__pop_x_y() + "M=D&M\n" + "@SP\n" + "M=M+1\n"
+                asm = self.__pop_x_y() + "M=D&M\n" + "@SP\n" + "M=M+1\n"
             case "or":
-                asm = debug + self.__pop_x_y() + "M=D|M\n" + "@SP\n" + "M=M+1\n"
+                asm = self.__pop_x_y() + "M=D|M\n" + "@SP\n" + "M=M+1\n"
             case "not":
-                asm = debug + "@SP\n" + "AM=M-1\n" + "M=!M\n" + "@SP\n" + "M=M+1\n"
+                asm = "@SP\n" + "AM=M-1\n" + "M=!M\n" + "@SP\n" + "M=M+1\n"
                 
-        self.file.write(asm)
+        self.file.write(debug+asm)
         
     def __pop_x_y(self):
         return "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n"
@@ -58,42 +58,45 @@ class CodeWriter:
             debug = "// push "+segment+" "+index+"\n"
             
             if segment == "constant":
-                asm = debug + "@"+index+"\n" + "D=A\n" + self.__push_to_stack()
+                asm = "@"+index+"\n" + "D=A\n" + self.__push_to_stack()
                 
             elif segment == "static":
-                asm = debug + "@"+self.filename+"."+index+"\n" + "D=M\n" + self.__push_to_stack()
+                asm = "@"+self.filename+"."+index+"\n" + "D=M\n" + self.__push_to_stack()
             
             elif segment == "temp" or segment == "pointer":
-                asm = debug + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack() 
+                asm = "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack() 
                 
             else:
-                asm = debug + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack()
+                asm = "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack()
                 
         elif command == "C_POP": # pop segment index -> asm instructions
             debug = "// pop "+segment+" "+index+"\n"
             
             if segment == "static":
-                asm = debug + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.filename+"."+index+"\n" + "M=D\n"
+                asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.filename+"."+index+"\n" + "M=D\n"
             
             elif segment == "temp" or segment == "pointer":
-                asm = debug + self.__pop_from_stack() + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + self.__store_in_segment()
+                asm = self.__pop_from_stack() + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + self.__store_in_segment()
             
             else:
-                asm = debug + self.__pop_from_stack() + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + self.__store_in_segment()
+                asm = self.__pop_from_stack() + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + self.__store_in_segment()
                 
-        self.file.write(asm)
+        self.file.write(debug+asm)
         
     def write_label(self, label):
-        asm = "("+self.filename+"."+self.function+"$"+label+")"
-        self.file.write(asm)
+        debug = "// "+"label "+label+"\n"
+        asm = "("+self.filename+"."+self.function+"$"+label+")\n"
+        self.file.write(debug+asm)
         
     def write_goto(self, label):
+        debug = "// "+"goto "+label+"\n"
         asm = "@"+self.filename+"."+self.function+"$"+label+"\n" + "0;JMP\n"
-        self.file.write(asm)
+        self.file.write(debug+asm)
         
     def write_if(self, label):
+        debug = "// "+"if-goto "+label+"\n"
         asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.filename+"."+self.function+"$"+label+"\n" + "D;JNE\n"
-        self.file.write(asm)
+        self.file.write(debug+asm)
         
     def __push_to_stack(self):
         return "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
