@@ -6,7 +6,7 @@ class CodeWriter:
     def __init__(self, path):
         self.filename = os.path.basename(path)[:-4]
         self.file = open(path, "w")
-        self.function = "f"
+        self.function = ""
         self.distinct = 0
         
     def write_arithmetic(self, command):
@@ -85,18 +85,31 @@ class CodeWriter:
         
     def write_label(self, label):
         debug = "// "+"label "+label+"\n"
-        asm = "("+self.filename+"."+self.function+"$"+label+")\n"
+        asm = "("+self.function+"$"+label+")\n"
         self.file.write(debug+asm)
         
     def write_goto(self, label):
         debug = "// "+"goto "+label+"\n"
-        asm = "@"+self.filename+"."+self.function+"$"+label+"\n" + "0;JMP\n"
+        asm = "@"+self.function+"$"+label+"\n" + "0;JMP\n"
         self.file.write(debug+asm)
         
     def write_if(self, label):
         debug = "// "+"if-goto "+label+"\n"
-        asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.filename+"."+self.function+"$"+label+"\n" + "D;JNE\n"
+        asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.function+"$"+label+"\n" + "D;JNE\n"
         self.file.write(debug+asm)
+        
+    def write_function(self, name, nVars):
+        debug = "// "+"function "+name+" "+nVars+"\n"
+        asm = "("+name+")\n" + "@"+nVars+"\n" + "D=A\n" + "("+name+"."+"LOOP)\n" + "@SP\n" + "A=M\n" + "M=0\n" + "@SP\n" + "M=M+1\n" + "D=D-1\n" + "@"+name+"."+"LOOP\n" + "D;JGT\n"
+        
+        self.file.write(debug+asm)
+        self.function = name
+        
+    def write_return(self):
+        pass
+    
+    def write_call(self, name, nArgs):
+        pass
         
     def __push_to_stack(self):
         return "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"

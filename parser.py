@@ -33,10 +33,10 @@ class Parser:
             return "C_IF"
         elif operator == "function":
             return "C_FUNCTION"
-        elif operator == "call":
-            return "C_CALL"
         elif operator == "return":
             return "C_RETURN"
+        elif operator == "call":
+            return "C_CALL"
         else:
             return "C_ARITHMETIC" 
         

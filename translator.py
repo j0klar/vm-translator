@@ -21,6 +21,10 @@ def main():
             code_writer.write_goto(parser.arg1())
         elif parser.command_type() == "C_IF":
             code_writer.write_if(parser.arg1())
+        elif parser.command_type() == "C_FUNCTION":
+            code_writer.write_function(parser.arg1(), parser.arg2())
+        elif parser.command_type() == "C_RETURN":
+            code_writer.write_return()
             
     code_writer.end_program()
     code_writer.close()
