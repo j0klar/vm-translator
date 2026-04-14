@@ -29,4 +29,3 @@ label N_GE_2               // if n >= 2 returns fib(n - 2) + fib(n - 1)
 	call Main.fibonacci 1  // computes fib(n - 1)
 	add                    // returns fib(n - 1) + fib(n - 2)
 	return
-

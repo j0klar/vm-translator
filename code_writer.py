@@ -13,7 +13,7 @@ class CodeWriter:
         
     def __bootstrap(self):
         self.file.write("// Initialize stack\n" + "@256\n" + "D=A\n" + "@SP\n" + "M=D\n")
-        self.write_function("Sys.init", "0")
+        self.write_call("Sys.init", "0")
         
     def set_file(self, file):
         self.filename = file[:-3]
@@ -109,7 +109,9 @@ class CodeWriter:
         
     def write_function(self, name, nVars):
         debug = "// function "+name+" "+nVars+"\n"
-        asm = "("+name+")\n" + "@"+nVars+"\n" + "D=A\n" + "("+name+"."+"LOOP)\n" + "@SP\n" + "A=M\n" + "M=0\n" + "@SP\n" + "M=M+1\n" + "D=D-1\n" + "@"+name+"."+"LOOP\n" + "D;JGT\n"
+        asm = "("+name+")\n"
+        if int(nVars) > 0:
+            asm += "@"+nVars+"\n" + "D=A\n" + "("+name+"."+"LOOP)\n" + "@SP\n" + "A=M\n" + "M=0\n" + "@SP\n" + "M=M+1\n" + "D=D-1\n" + "@"+name+"."+"LOOP\n" + "D;JGT\n"
         self.file.write(debug+asm)
         self.function = name
         
@@ -119,7 +121,7 @@ class CodeWriter:
         self.file.write(debug+asm)
     
     def write_call(self, name, nArgs):
-        debug = "// "+"function "+name+" "+nArgs+"\n"
+        debug = "// call "+name+" "+nArgs+"\n"
         asm = "@"+name+"$ret."+str(self.call_count)+"\n" + "D=A\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n" + self.__save_pointer("LCL") + self.__save_pointer("ARG") + self.__save_pointer("THIS") + self.__save_pointer("THAT") + "@SP\n" + "D=M\n" + "@5\n" + "D=D-A\n" + "@"+nArgs+"\n" + "D=D-A\n" + "@ARG\n" + "M=D\n" + "@SP\n" + "D=M\n" + "@LCL\n" + "M=D\n" + "@"+name+"\n" + "0;JMP\n" + "("+name+"$ret."+str(self.call_count)+")\n"
         self.call_count += 1
         self.file.write(debug+asm)
