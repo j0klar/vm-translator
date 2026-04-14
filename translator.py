@@ -25,6 +25,8 @@ def main():
             code_writer.write_function(parser.arg1(), parser.arg2())
         elif parser.command_type() == "C_RETURN":
             code_writer.write_return()
+        elif parser.command_type() == "C_CALL":
+            code_writer.write_call(parser.arg1(), parser.arg2())
             
     code_writer.end_program()
     code_writer.close()

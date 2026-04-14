@@ -8,6 +8,7 @@ class CodeWriter:
         self.file = open(path, "w")
         self.function = ""
         self.distinct = 0
+        self.call_count = 0
         
     def write_arithmetic(self, command):
         debug = "// "+command+"\n"
@@ -110,7 +111,13 @@ class CodeWriter:
         self.file.write(debug+asm)
     
     def write_call(self, name, nArgs):
-        pass
+        debug = "// "+"function "+name+" "+nArgs+"\n"
+        asm = "@"+name+"$ret."+self.call_count+"\n" + "D=A\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n" + self.__save_pointer("LCL") + self.__save_pointer("ARG") + self.__save_pointer("THIS") + self.__save_pointer("THAT") + "@SP\n" + "D=M\n" + "@5\n" + "D=D-A\n" + "@"+nArgs+"\n" + "D=D-A\n" + "@ARG\n" + "M=D\n" + "@SP\n" + "D=M\n" + "@LCL\n" + "M=D\n" + "@"+name+"\n" + "0;JMP\n" + "("+name+"$ret."+self.call_count+")\n"
+        self.call_count += 1
+        self.file.write(debug+asm)
+        
+    def __save_pointer(self, pointer):
+        return "@"+pointer+"\n" + "D=M\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
         
     def __restore_pointer(self, pointer):
         return "@R13\n" + "AM=M-1\n" + "D=M\n" + "@"+pointer+"\n" + "M=D\n"
