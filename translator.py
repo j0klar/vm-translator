@@ -3,12 +3,27 @@
 from parser import Parser
 from code_writer import CodeWriter
 import sys
+import os
 
 def main():
-    file_in = sys.argv[1]
-    parser = Parser(file_in)
-    code_writer = CodeWriter(file_in[:-3]+".asm")
+    path_in = sys.argv[1]
     
+    if os.path.isfile(path_in):
+        code_writer = CodeWriter(path_in[:-3]+".asm")
+        parser = Parser(path_in)
+        __parse_file(parser, code_writer)
+        
+    elif os.path.isdir(path_in):
+        code_writer = CodeWriter(path_in+".asm")
+        dir_in = os.listdir(path_in)
+        for file in dir_in:
+            code_writer.set_file(file)
+            parser = Parser(os.path.join(path_in, file))
+            __parse_file(parser, code_writer)
+            
+    code_writer.close()
+
+def __parse_file(parser, code_writer):
     while parser.more_lines():
         parser.advance()
         if parser.command_type() == "C_PUSH" or parser.command_type() == "C_POP":
@@ -27,9 +42,6 @@ def main():
             code_writer.write_return()
         elif parser.command_type() == "C_CALL":
             code_writer.write_call(parser.arg1(), parser.arg2())
-            
-    code_writer.end_program()
-    code_writer.close()
     
 if __name__ == "__main__":
     main()

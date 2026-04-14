@@ -1,3 +1,21 @@
+// Initialize stack
+@256
+D=A
+@SP
+M=D
+// function Sys.init 0
+(Sys.init)
+@0
+D=A
+(Sys.init.LOOP)
+@SP
+A=M
+M=0
+@SP
+M=M+1
+D=D-1
+@Sys.init.LOOP
+D;JGT
 // function SimpleFunction.test 2
 (SimpleFunction.test)
 @2
