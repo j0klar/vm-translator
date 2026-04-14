@@ -25,12 +25,24 @@ class Parser:
             return "C_PUSH"
         elif operator == "pop":
             return "C_POP"
+        elif operator == "label":
+            return "C_LABEL"
+        elif operator == "goto":
+            return "C_GOTO"
+        elif operator == "if-goto":
+            return "C_IF"
+        elif operator == "function":
+            return "C_FUNCTION"
+        elif operator == "call":
+            return "C_CALL"
+        elif operator = "return":
+            return "C_RETURN"
         else:
             return "C_ARITHMETIC" 
         
     def arg1(self):
         cmd = self.instr.split()[0]
-        if cmd == "push" or cmd == "pop":
+        if cmd in ["push", "pop", "label", "goto", "if-goto", "function", "call"]:
             return self.instr.split()[1]
         else:
             return cmd

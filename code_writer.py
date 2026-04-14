@@ -6,6 +6,7 @@ class CodeWriter:
     def __init__(self, path):
         self.filename = os.path.basename(path)[:-4]
         self.file = open(path, "w")
+        self.function = "f"
         self.distinct = 0
         
     def write_arithmetic(self, command):
@@ -80,6 +81,18 @@ class CodeWriter:
             else:
                 asm = debug + self.__pop_from_stack() + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + self.__store_in_segment()
                 
+        self.file.write(asm)
+        
+    def write_label(self, label):
+        asm = "("+self.filename+"."+self.function+"$"+label+")"
+        self.file.write(asm)
+        
+    def write_goto(self, label):
+        asm = "@"+self.filename+"."+self.function+"$"+label+"\n" + "0;JMP\n"
+        self.file.write(asm)
+        
+    def write_if(self, label):
+        asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.filename+"."+self.function+"$"+label+"\n" + "D;JNE\n"
         self.file.write(asm)
         
     def __push_to_stack(self):
