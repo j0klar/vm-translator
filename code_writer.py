@@ -101,15 +101,19 @@ class CodeWriter:
     def write_function(self, name, nVars):
         debug = "// "+"function "+name+" "+nVars+"\n"
         asm = "("+name+")\n" + "@"+nVars+"\n" + "D=A\n" + "("+name+"."+"LOOP)\n" + "@SP\n" + "A=M\n" + "M=0\n" + "@SP\n" + "M=M+1\n" + "D=D-1\n" + "@"+name+"."+"LOOP\n" + "D;JGT\n"
-        
         self.file.write(debug+asm)
         self.function = name
         
     def write_return(self):
-        pass
+        debug = "// return\n"
+        asm = "@LCL\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@5\n" + "A=D-A\n" + "D=M\n" + "@R14\n" + "M=D\n" + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@ARG\n" + "A=M\n" + "M=D\n" + "D=A\n" + "@SP\n" + "M=D+1\n" + self.__restore_pointer("THAT") + self.__restore_pointer("THIS") + self.__restore_pointer("ARG") + self.__restore_pointer("LCL") + "@R14\n" + "A=M\n" + "0;JMP\n"
+        self.file.write(debug+asm)
     
     def write_call(self, name, nArgs):
         pass
+        
+    def __restore_pointer(self, pointer):
+        return "@R13\n" + "AM=M-1\n" + "D=M\n" + "@"+pointer+"\n" + "M=D\n"
         
     def __push_to_stack(self):
         return "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
