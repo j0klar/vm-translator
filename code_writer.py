@@ -1,7 +1,7 @@
 import os
 
 class CodeWriter:
-    """Translates a parsed VM command into Hack assembly instructions."""
+    """Generates and writes Hack assembly code to output file for a parsed VM command."""
     
     def __init__(self, path):
         self.filename = os.path.basename(path)[:-4]

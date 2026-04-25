@@ -1,9 +1,8 @@
-"""Translates a single correct .vm-file into a correct .asm-file."""
+"""Translates one or more correct .vm-files into a single correct .asm-file."""
 
 from parser import Parser
 from code_writer import CodeWriter
-import sys
-import os
+import sys, os
 
 def main():
     path_in = sys.argv[1]
