@@ -9,9 +9,9 @@ class CodeWriter:
         self.function = ""
         self.distinct = 0
         self.call_count = 0
-        self.__bootstrap()
+        self._bootstrap()
         
-    def __bootstrap(self):
+    def _bootstrap(self):
         self.file.write("// Initialize stack\n" + "@256\n" + "D=A\n" + "@SP\n" + "M=D\n")
         self.write_call("Sys.init", "0")
         
@@ -22,30 +22,30 @@ class CodeWriter:
         debug = "// "+command+"\n"
         match command: # arithmetic-logical command -> asm instructions
             case "add":
-                asm = self.__pop_x_y() + "M=D+M\n" + "@SP\n" + "M=M+1\n"
+                asm = self._pop_x_y() + "M=D+M\n" + "@SP\n" + "M=M+1\n"
             case "sub":
                 asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n" + "M=M-D\n" + "@SP\n" + "M=M+1\n"
             case "neg":
                 asm = "@SP\n" + "AM=M-1\n" + "M=-M\n" + "@SP\n" + "M=M+1\n"
             case "eq":
-                asm = self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JEQ\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
+                asm = self._pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JEQ\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
                 self.distinct += 1
             case "gt":
-                asm = self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JGT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
+                asm = self._pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JGT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
                 self.distinct += 1
             case "lt":
-                asm = self.__pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JLT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
+                asm = self._pop_x_y() + "D=M-D\n" + "M=-1\n" + "@TRUE"+str(self.distinct)+"\n" + "D;JLT\n" + "@SP\n" + "A=M\n" + "M=0\n" + "(TRUE"+str(self.distinct)+")\n" + "@SP\n" + "M=M+1\n"
                 self.distinct += 1
             case "and":
-                asm = self.__pop_x_y() + "M=D&M\n" + "@SP\n" + "M=M+1\n"
+                asm = self._pop_x_y() + "M=D&M\n" + "@SP\n" + "M=M+1\n"
             case "or":
-                asm = self.__pop_x_y() + "M=D|M\n" + "@SP\n" + "M=M+1\n"
+                asm = self._pop_x_y() + "M=D|M\n" + "@SP\n" + "M=M+1\n"
             case "not":
                 asm = "@SP\n" + "AM=M-1\n" + "M=!M\n" + "@SP\n" + "M=M+1\n"
                 
         self.file.write(debug+asm)
         
-    def __pop_x_y(self):
+    def _pop_x_y(self):
         return "@SP\n" + "AM=M-1\n" + "D=M\n" + "@SP\n" + "AM=M-1\n"
         
     def write_pushpop(self, command, segment, index):
@@ -67,16 +67,16 @@ class CodeWriter:
             debug = "// push "+segment+" "+index+"\n"
             
             if segment == "constant":
-                asm = "@"+index+"\n" + "D=A\n" + self.__push_to_stack()
+                asm = "@"+index+"\n" + "D=A\n" + self._push_to_stack()
                 
             elif segment == "static":
-                asm = "@"+self.filename+"."+index+"\n" + "D=M\n" + self.__push_to_stack()
+                asm = "@"+self.filename+"."+index+"\n" + "D=M\n" + self._push_to_stack()
             
             elif segment == "temp" or segment == "pointer":
-                asm = "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack() 
+                asm = "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self._push_to_stack() 
                 
             else:
-                asm = "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self.__push_to_stack()
+                asm = "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self._push_to_stack()
                 
         elif command == "C_POP": # pop segment index -> asm instructions
             debug = "// pop "+segment+" "+index+"\n"
@@ -85,10 +85,10 @@ class CodeWriter:
                 asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.filename+"."+index+"\n" + "M=D\n"
             
             elif segment == "temp" or segment == "pointer":
-                asm = self.__pop_from_stack() + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + self.__store_in_segment()
+                asm = self._pop_from_stack() + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + self._store_in_segment()
             
             else:
-                asm = self.__pop_from_stack() + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + self.__store_in_segment()
+                asm = self._pop_from_stack() + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + self._store_in_segment()
                 
         self.file.write(debug+asm)
         
@@ -117,28 +117,28 @@ class CodeWriter:
         
     def write_return(self):
         debug = "// return\n"
-        asm = "@LCL\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@5\n" + "A=D-A\n" + "D=M\n" + "@R14\n" + "M=D\n" + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@ARG\n" + "A=M\n" + "M=D\n" + "D=A\n" + "@SP\n" + "M=D+1\n" + self.__restore_pointer("THAT") + self.__restore_pointer("THIS") + self.__restore_pointer("ARG") + self.__restore_pointer("LCL") + "@R14\n" + "A=M\n" + "0;JMP\n"
+        asm = "@LCL\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@5\n" + "A=D-A\n" + "D=M\n" + "@R14\n" + "M=D\n" + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@ARG\n" + "A=M\n" + "M=D\n" + "D=A\n" + "@SP\n" + "M=D+1\n" + self._restore_pointer("THAT") + self._restore_pointer("THIS") + self._restore_pointer("ARG") + self._restore_pointer("LCL") + "@R14\n" + "A=M\n" + "0;JMP\n"
         self.file.write(debug+asm)
     
     def write_call(self, name, nArgs):
         debug = "// call "+name+" "+nArgs+"\n"
-        asm = "@"+name+"$ret."+str(self.call_count)+"\n" + "D=A\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n" + self.__save_pointer("LCL") + self.__save_pointer("ARG") + self.__save_pointer("THIS") + self.__save_pointer("THAT") + "@SP\n" + "D=M\n" + "@5\n" + "D=D-A\n" + "@"+nArgs+"\n" + "D=D-A\n" + "@ARG\n" + "M=D\n" + "@SP\n" + "D=M\n" + "@LCL\n" + "M=D\n" + "@"+name+"\n" + "0;JMP\n" + "("+name+"$ret."+str(self.call_count)+")\n"
+        asm = "@"+name+"$ret."+str(self.call_count)+"\n" + "D=A\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n" + self._save_pointer("LCL") + self._save_pointer("ARG") + self._save_pointer("THIS") + self._save_pointer("THAT") + "@SP\n" + "D=M\n" + "@5\n" + "D=D-A\n" + "@"+nArgs+"\n" + "D=D-A\n" + "@ARG\n" + "M=D\n" + "@SP\n" + "D=M\n" + "@LCL\n" + "M=D\n" + "@"+name+"\n" + "0;JMP\n" + "("+name+"$ret."+str(self.call_count)+")\n"
         self.call_count += 1
         self.file.write(debug+asm)
         
-    def __save_pointer(self, pointer):
+    def _save_pointer(self, pointer):
         return "@"+pointer+"\n" + "D=M\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
         
-    def __restore_pointer(self, pointer):
+    def _restore_pointer(self, pointer):
         return "@R13\n" + "AM=M-1\n" + "D=M\n" + "@"+pointer+"\n" + "M=D\n"
         
-    def __push_to_stack(self):
+    def _push_to_stack(self):
         return "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
     
-    def __pop_from_stack(self):
+    def _pop_from_stack(self):
         return "@SP\n" + "AM=M-1\n" + "D=M\n" + "@R13\n" + "M=D\n"
         
-    def __store_in_segment(self):
+    def _store_in_segment(self):
         return  "D=D+A\n" + "@R14\n" + "M=D\n" + "@R13\n" + "D=M\n" + "@R14\n" + "A=M\n" + "M=D\n"
         
     def close(self):

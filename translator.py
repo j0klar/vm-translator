@@ -10,24 +10,24 @@ def main():
     if os.path.isfile(path_in):
         code_writer = CodeWriter(path_in[:-3]+".asm")
         parser = Parser(path_in)
-        __parse_file(parser, code_writer)
+        _parse_file(parser, code_writer)
         
     elif os.path.isdir(path_in):
         code_writer = CodeWriter(path_in+".asm")
         code_writer.set_file("Sys.vm")
         parser = Parser(os.path.join(path_in, "Sys.vm"))
-        __parse_file(parser, code_writer)
+        _parse_file(parser, code_writer)
 
         dir_in = os.listdir(path_in)
         for file in dir_in:
             if file != "Sys.vm":
                 code_writer.set_file(file)
                 parser = Parser(os.path.join(path_in, file))
-                __parse_file(parser, code_writer)
+                _parse_file(parser, code_writer)
             
     code_writer.close()
 
-def __parse_file(parser, code_writer):
+def _parse_file(parser, code_writer):
     while parser.more_lines():
         parser.advance()
         if parser.command_type() == "C_PUSH" or parser.command_type() == "C_POP":
