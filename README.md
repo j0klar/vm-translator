@@ -2,7 +2,7 @@
 
 A VM translator for the Hack virtual machine written in Python, built as part of the [Nand2Tetris](https://www.nand2tetris.org/) course (Projects 7 & 8).
 
-Translates `.vm` files written in the Hack VM language into `.asm` Hack assembly files. Supports both single-file and multi-file (directory) translation, including bootstrap code and the complete set of VM commands.
+Translates `.vm` files written in the Hack VM language into `.asm` Hack assembly files. Supports both single-file and multi-file (directory) translation.
 
 ## Usage
 
@@ -17,6 +17,7 @@ The output `.asm` file will be created in the same directory as the input.
 
 ```bash
 python translator.py FibonacciElement   # produces FibonacciElement.asm
+python translator.py SimpleFunction.vm   # produces SimpleFunction.asm
 ```
 
 ## Supported Commands
@@ -29,6 +30,12 @@ python translator.py FibonacciElement   # produces FibonacciElement.asm
 
 **Functions:** `function`, `call`, `return`
 
+## The Global Stack
+
+![Global Stack](global-stack.png)
+
+*Source: Nisan & Schocken, The Elements of Computing Systems, 2nd ed. MIT Press (2021), Figure 8.3.*
+
 ## Project Structure
 
 ```
@@ -36,6 +43,7 @@ vm-translator/
 ├── translator.py     # Main entry point
 ├── code_writer.py    # Translates VM commands to Hack assembly
 ├── parser.py         # Parses .vm files into commands
-└── examples
+├── global-stack.png  # Global stack diagram
+└── examples/
         
 ```
