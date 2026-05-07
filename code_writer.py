@@ -42,6 +42,8 @@ class CodeWriter:
                 asm = self._pop_x_y() + "M=D|M\n" + "@SP\n" + "M=M+1\n"
             case "not":
                 asm = "@SP\n" + "AM=M-1\n" + "M=!M\n" + "@SP\n" + "M=M+1\n"
+            case _:
+                asm = ""
                 
         self.file.write(debug+asm)
         
@@ -107,11 +109,11 @@ class CodeWriter:
         asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.function+"$"+label+"\n" + "D;JNE\n"
         self.file.write(debug+asm)
         
-    def write_function(self, name, nVars):
-        debug = "// function "+name+" "+nVars+"\n"
+    def write_function(self, name, n_vars):
+        debug = "// function "+name+" "+n_vars+"\n"
         asm = "("+name+")\n"
-        if int(nVars) > 0:
-            asm += "@"+nVars+"\n" + "D=A\n" + "("+name+"."+"LOOP)\n" + "@SP\n" + "A=M\n" + "M=0\n" + "@SP\n" + "M=M+1\n" + "D=D-1\n" + "@"+name+"."+"LOOP\n" + "D;JGT\n"
+        if int(n_vars) > 0:
+            asm += "@"+n_vars+"\n" + "D=A\n" + "("+name+"."+"LOOP)\n" + "@SP\n" + "A=M\n" + "M=0\n" + "@SP\n" + "M=M+1\n" + "D=D-1\n" + "@"+name+"."+"LOOP\n" + "D;JGT\n"
         self.file.write(debug+asm)
         self.function = name
         
@@ -120,9 +122,9 @@ class CodeWriter:
         asm = "@LCL\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@5\n" + "A=D-A\n" + "D=M\n" + "@R14\n" + "M=D\n" + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@ARG\n" + "A=M\n" + "M=D\n" + "D=A\n" + "@SP\n" + "M=D+1\n" + self._restore_pointer("THAT") + self._restore_pointer("THIS") + self._restore_pointer("ARG") + self._restore_pointer("LCL") + "@R14\n" + "A=M\n" + "0;JMP\n"
         self.file.write(debug+asm)
     
-    def write_call(self, name, nArgs):
-        debug = "// call "+name+" "+nArgs+"\n"
-        asm = "@"+name+"$ret."+str(self.call_count)+"\n" + "D=A\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n" + self._save_pointer("LCL") + self._save_pointer("ARG") + self._save_pointer("THIS") + self._save_pointer("THAT") + "@SP\n" + "D=M\n" + "@5\n" + "D=D-A\n" + "@"+nArgs+"\n" + "D=D-A\n" + "@ARG\n" + "M=D\n" + "@SP\n" + "D=M\n" + "@LCL\n" + "M=D\n" + "@"+name+"\n" + "0;JMP\n" + "("+name+"$ret."+str(self.call_count)+")\n"
+    def write_call(self, name, n_args):
+        debug = "// call "+name+" "+n_args+"\n"
+        asm = "@"+name+"$ret."+str(self.call_count)+"\n" + "D=A\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n" + self._save_pointer("LCL") + self._save_pointer("ARG") + self._save_pointer("THIS") + self._save_pointer("THAT") + "@SP\n" + "D=M\n" + "@5\n" + "D=D-A\n" + "@"+n_args+"\n" + "D=D-A\n" + "@ARG\n" + "M=D\n" + "@SP\n" + "D=M\n" + "@LCL\n" + "M=D\n" + "@"+name+"\n" + "0;JMP\n" + "("+name+"$ret."+str(self.call_count)+")\n"
         self.call_count += 1
         self.file.write(debug+asm)
         
