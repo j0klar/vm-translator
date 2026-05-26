@@ -13,6 +13,10 @@ class CodeWriter:
         
     def _bootstrap(self):
         self.file.write("// Initialize stack\n" + "@256\n" + "D=A\n" + "@SP\n" + "M=D\n")
+        self.file.write("@$$START\n" + "0;JMP\n")
+        self._emit_call_subroutine()
+        self._emit_return_subroutine()
+        self.file.write("($$START)\n")
         self.write_call("Sys.init", "0")
         
     def set_file(self, file):
@@ -69,13 +73,19 @@ class CodeWriter:
             debug = "// push "+segment+" "+index+"\n"
             
             if segment == "constant":
-                asm = "@"+index+"\n" + "D=A\n" + self._push_to_stack()
+                if index == "0":
+                    asm = "@SP\n" + "AM=M+1\n" + "A=A-1\n" + "M=0\n"
+                elif index == "1":
+                    asm = "@SP\n" + "AM=M+1\n" + "A=A-1\n" + "M=1\n"
+                else:
+                    asm = "@"+index+"\n" + "D=A\n" + self._push_to_stack()
                 
             elif segment == "static":
                 asm = "@"+self.filename+"."+index+"\n" + "D=M\n" + self._push_to_stack()
             
             elif segment == "temp" or segment == "pointer":
-                asm = "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self._push_to_stack() 
+                addr = str(int(mapped) + int(index))
+                asm = "@"+addr+"\n" + "D=M\n" + self._push_to_stack()
                 
             else:
                 asm = "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "A=D+A\n" + "D=M\n" + self._push_to_stack()
@@ -87,10 +97,11 @@ class CodeWriter:
                 asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+self.filename+"."+index+"\n" + "M=D\n"
             
             elif segment == "temp" or segment == "pointer":
-                asm = self._pop_from_stack() + "@"+mapped+"\n" + "D=A\n" + "@"+index+"\n" + self._store_in_segment()
+                addr = str(int(mapped) + int(index))
+                asm = "@SP\n" + "AM=M-1\n" + "D=M\n" + "@"+addr+"\n" + "M=D\n"
             
             else:
-                asm = self._pop_from_stack() + "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + self._store_in_segment()
+                asm = "@"+mapped+"\n" + "D=M\n" + "@"+index+"\n" + "D=D+A\n" + "@R13\n" + "M=D\n" + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@R13\n" + "A=M\n" + "M=D\n"
                 
         self.file.write(debug+asm)
         
@@ -117,16 +128,21 @@ class CodeWriter:
         self.file.write(debug+asm)
         self.function = name
         
-    def write_return(self):
-        debug = "// return\n"
-        asm = "@LCL\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@5\n" + "A=D-A\n" + "D=M\n" + "@R14\n" + "M=D\n" + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@ARG\n" + "A=M\n" + "M=D\n" + "D=A\n" + "@SP\n" + "M=D+1\n" + self._restore_pointer("THAT") + self._restore_pointer("THIS") + self._restore_pointer("ARG") + self._restore_pointer("LCL") + "@R14\n" + "A=M\n" + "0;JMP\n"
-        self.file.write(debug+asm)
-    
     def write_call(self, name, n_args):
         debug = "// call "+name+" "+n_args+"\n"
-        asm = "@"+name+"$ret."+str(self.call_count)+"\n" + "D=A\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n" + self._save_pointer("LCL") + self._save_pointer("ARG") + self._save_pointer("THIS") + self._save_pointer("THAT") + "@SP\n" + "D=M\n" + "@5\n" + "D=D-A\n" + "@"+n_args+"\n" + "D=D-A\n" + "@ARG\n" + "M=D\n" + "@SP\n" + "D=M\n" + "@LCL\n" + "M=D\n" + "@"+name+"\n" + "0;JMP\n" + "("+name+"$ret."+str(self.call_count)+")\n"
+        ret_label = name+"$ret."+str(self.call_count)
+        asm = "@"+ret_label+"\n" + "D=A\n" + "@R13\n" + "M=D\n" + "@"+n_args+"\n" + "D=A\n" + "@R14\n" + "M=D\n" + "@"+name+"\n" + "D=A\n" + "@R15\n" + "M=D\n" + "@$$CALL\n" + "0;JMP\n" + "("+ret_label+")\n"
         self.call_count += 1
         self.file.write(debug+asm)
+        
+    def write_return(self):
+        self.file.write("// return\n" + "@$$RETURN\n" + "0;JMP\n")
+        
+    def _emit_call_subroutine(self):
+        self.file.write("// $$CALL bootstrap\n" + "($$CALL)\n" + "@R13\n" + "D=M\n" + self._push_to_stack() + self._save_pointer("LCL") + self._save_pointer("ARG") + self._save_pointer("THIS") + self._save_pointer("THAT") + "@SP\n" + "D=M\n" + "@5\n" + "D=D-A\n" + "@R14\n" + "D=D-M\n" + "@ARG\n" + "M=D\n" + "@SP\n" + "D=M\n" + "@LCL\n" + "M=D\n" + "@R15\n" + "A=M\n" + "0;JMP\n")
+
+    def _emit_return_subroutine(self):
+        self.file.write("// $$RETURN bootstrap\n" + "($$RETURN)\n" + "@LCL\n" + "D=M\n" + "@R13\n" + "M=D\n" + "@5\n" + "A=D-A\n" + "D=M\n" + "@R14\n" + "M=D\n" + "@SP\n" + "AM=M-1\n" + "D=M\n" + "@ARG\n" + "A=M\n" + "M=D\n" + "D=A\n" + "@SP\n" + "M=D+1\n" + self._restore_pointer("THAT") + self._restore_pointer("THIS") + self._restore_pointer("ARG") + self._restore_pointer("LCL") + "@R14\n" + "A=M\n" + "0;JMP\n")
         
     def _save_pointer(self, pointer):
         return "@"+pointer+"\n" + "D=M\n" + "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
@@ -136,12 +152,6 @@ class CodeWriter:
         
     def _push_to_stack(self):
         return "@SP\n" + "A=M\n" + "M=D\n" + "@SP\n" + "M=M+1\n"
-    
-    def _pop_from_stack(self):
-        return "@SP\n" + "AM=M-1\n" + "D=M\n" + "@R13\n" + "M=D\n"
-        
-    def _store_in_segment(self):
-        return  "D=D+A\n" + "@R14\n" + "M=D\n" + "@R13\n" + "D=M\n" + "@R14\n" + "A=M\n" + "M=D\n"
         
     def close(self):
         self.file.close()

@@ -13,6 +13,8 @@ def main():
         _parse_file(parser, code_writer)
         
     elif os.path.isdir(path_in):
+        if path_in.endswith("/"):
+            path_in = path_in[:-1]
         code_writer = CodeWriter(path_in+".asm")
         vm_files = []
         for file in os.listdir(path_in):
